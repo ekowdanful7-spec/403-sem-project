@@ -1,32 +1,29 @@
 import asyncio
+from spade.agent import Agent
+from spade.behaviour import OneShotBehaviour
 
-# ---------------- SENSOR ----------------
-async def sensor():
-    print("🚨 Sensor Agent: Fire detected!")
-    print("📡 Sending alert to Coordinator...\n")
-    await asyncio.sleep(1)
-    return "fire_alert"
-
-# ---------------- COORDINATOR ----------------
-async def coordinator(message):
-    if message == "fire_alert":
-        print("🧠 Coordinator Agent: Alert received!")
-        print("📋 Assigning Rescue Agent...\n")
+class SensorBehaviour(OneShotBehaviour):
+    async def run(self):
+        print("🚨 Sensor Agent: Fire detected!")
         await asyncio.sleep(1)
-        return "dispatch_rescue"
 
-# ---------------- RESCUE ----------------
-async def rescue(task):
-    if task == "dispatch_rescue":
-        await asyncio.sleep(2)
-        print("🚑 Rescue Agent: Responding to emergency!")
-        print("✅ Victims rescued successfully.\n")
+class SensorAgent(Agent):
+    async def setup(self):
+        self.add_behaviour(SensorBehaviour())
 
-# ---------------- MAIN ----------------
 async def main():
-    alert = await sensor()
-    task = await coordinator(alert)
-    await rescue(task)
+    jid = "agent1@127.0.0.1"
+    password = "password"
 
+    sensor = SensorAgent(jid, password, verify_security=False)
+
+    # ✅ await must be INSIDE this function
+    await sensor.start(auto_register=True)
+
+    await asyncio.sleep(3)
+
+    await sensor.stop()
+
+# ✅ THIS runs the async function properly
 if __name__ == "__main__":
     asyncio.run(main())
